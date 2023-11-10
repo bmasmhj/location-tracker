@@ -31,7 +31,12 @@ router.post('/register', async (req, res) => {
       } else {
         const user = new User({ name, email,job, password, cpassword });
         await user.save();
-        return res.status(201).json({ message: "User registered successfully"}); // Set the status code to 201 for successful registration
+        const token = await user.generateAuthToken();
+        res.cookie("jwtoken", token, {
+          expires: new Date(Date.now() + 25892000000),
+          httpOnly: false
+        });
+        return res.status(201).json({ message: "User registered successfully" ,  token : token   }); // Set the status code to 201 for successful registration
       }
     } catch (err) {
       console.log(err);
@@ -109,8 +114,19 @@ router.post('/register', async (req, res) => {
 router.get('/locations', async (req, res) => {
   try {
     // Fetch all user locations from the database
-     console.log("list");
     const locations = await Location.find();
+    res.status(200).json(locations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error fetching locations' });
+  }
+});
+
+
+router.get('/users', async (req, res) => {
+  try {
+    // Fetch all user locations from the database
+    const locations = await User.find();
     res.status(200).json(locations);
   } catch (error) {
     console.error(error);
@@ -123,10 +139,12 @@ router.get('/locations', async (req, res) => {
 router.get('/logout', (req, res) => {
   console.log("hello");
 
-  res.clearCookie('jwtoken'); // Clear the cookie you set during login
+  res.clearCookie ('jwtoken'); // Clear the cookie you set during login
 
   // Optionally, you can also destroy the session if you're using sessions
   // req.session.destroy();
+
+  
 
   res.status(200).json({ message: 'Logged out successfully' });
 });
