@@ -2,18 +2,86 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Button, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Instance from '../utils/axios';
+import {routeMapping } from '../allroutes';
+import  { socket } from '../utils/socket';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
+
 
 const LocationListScreen = () => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ permission , setPermission ] = useState(false);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
+  const [myLocation, setMyLocation] = useState([]);
+  const [user , setUser] = useState(null);
+  useEffect( () => {
+    Location.getBackgroundPermissionsAsync().then((status) => { } );
+    Location.hasServicesEnabledAsync().then((status) => {} );
+    Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 1000,
+        distanceInterval: 1,
+      },
+      (location) => {
+          if(location){
+            setMyLocation(
+              {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }
+            )
+          }
+      }
+      
+    )
+  } , [] )
 
+  useEffect(() => {
+    AsyncStorage.getItem('user').then((value) => {
+      setUser(value);
+    })
+  }, [])
+
+  useEffect(() => {
+    socket.emit('busMove' , {
+      user : user ,
+      location : myLocation
+    })
+  }, [myLocation]);
 
   useEffect(() => {
     fetchUserLocations();    
   }, [])
 
+  useEffect(() => {
+    getLocationPermission();
+  } , []);
+
+  async function getLocationPermission() {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      return;
+    }
+    if(status === 'granted'){
+      getCurrentLocation();
+      setPermission(true);
+    }
+  }
+  
+  async function getCurrentLocation() {
+    const { coords } = await Location.getCurrentPositionAsync({ accuracy: 1 });
+    const { latitude, longitude } = coords;
+    setMyLocation
+    ({
+      latitude: latitude,
+      longitude: longitude,
+    })
+ 
+    setLoading(false);
+  }
   const fetchUserLocations = () => {
     Instance.get('/locations')
     .then((response) => {
@@ -45,7 +113,9 @@ const LocationListScreen = () => {
             source={require('../assets/busfront.png')}
           ></Image>
         <Text style={styles.locationText}>
-          Bus Route
+          {
+            routeMapping[item.job].name
+          }
         </Text>
         <Image
             style={{ width: 30 , height: 30 , marginRight : 10 , marginLeft : 'auto' }}
@@ -55,7 +125,7 @@ const LocationListScreen = () => {
       
       <View
         style={{
-          alignItems : 'center',
+          alignItems : 'start',
           justifyContent : 'center',
           borderTopWidth : 1,
           borderTopColor : '#ccc',
@@ -63,7 +133,7 @@ const LocationListScreen = () => {
       }}
       >
       <Text>
-         Latitude: {item.latitude}, Longitude: {item.longitude}
+         Name : {item.name}  
        </Text>
       </View>
       
@@ -91,7 +161,6 @@ const LocationListScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-      
         data={locations}
         keyExtractor={(item) => item._id}
         renderItem={renderLocationItem}

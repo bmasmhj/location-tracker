@@ -7,12 +7,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import Navigation from '../Navigation';
 import RegistrationScreen from '../screens/RegistrationScreen';
+import RegisterDriver from '../screens/RegisterDrivier';
 
 
 
 function RouteHandler() {
     const [ login , setLogin ] = React.useState();
-    const [ signup , setSignup ] = React.useState();
+    const [ signup , setSignup ] = React.useState({
+        user : true,
+        driver : false,
+    });
     const [ token , setToken ] = React.useState('');
     const [ mainPage , setMainPage ] = React.useState(false);
 
@@ -60,8 +64,18 @@ function RouteHandler() {
                     /> : null
             }
             {
-                signup ? 
+                signup.user ? 
                 <RegistrationScreen 
+                    setLogin={setLogin}
+                    setSignup={setSignup}
+                    setToken={setToken}
+                    checkLogin={checkLogin}
+                /> : null
+            }
+
+            {
+                signup.driver ? 
+                <RegisterDriver 
                     setLogin={setLogin}
                     setSignup={setSignup}
                     setToken={setToken}

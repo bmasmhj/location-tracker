@@ -32,7 +32,10 @@ export default function Navigation({
                 await AsyncStorage.removeItem('jwtToken');
                 setToken(false);
                 setLogin(true);
-                setSignup(false);
+                setSignup({
+                  user : false ,
+                  driver : false ,
+                });
                 setMainPage(false);
                 checkLogin();
             } catch(e) {

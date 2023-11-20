@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const userSchema = new mongoose.Schema({
+const driverSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
     email:{
         type: String,
         required: true,
+    },
+    job:{
+        type: String,
+        required: false,
     },
     password:{
         type: String,
@@ -19,6 +23,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    latitude : {
+        type : Number,
+        required : true,
+    },
+    longitude: {
+        type: Number,
+        required: true,
+      },
     tokens:[
         {
            token:{
@@ -32,7 +44,7 @@ const userSchema = new mongoose.Schema({
 
 //hashing the password
 
-userSchema.pre('save', async function(next){
+driverSchema.pre('save', async function(next){
     if(this.isModified('password')){
         this.password = await bcrypt.hash(this.password,12);
         this.cpassword = await bcrypt.hash(this.cpassword,12);
@@ -42,7 +54,7 @@ userSchema.pre('save', async function(next){
 
 // generating token
 
-userSchema.methods.generateAuthToken = async function(){
+driverSchema.methods.generateAuthToken = async function(){
      try{
             let token = jwt.sign({_id:this._id},process.env.SECRET_KEY);
             this.tokens = this.tokens.concat({token:token});
@@ -53,6 +65,6 @@ userSchema.methods.generateAuthToken = async function(){
      }
 };
 
-const User = mongoose.model('USER', userSchema);
+const Driver = mongoose.model('DRIVER', driverSchema);
 
-module.exports = User;
+module.exports = Driver;

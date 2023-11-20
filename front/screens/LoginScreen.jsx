@@ -6,6 +6,8 @@ import Instance from '../utils/axios';
 const LoginScreen = ({setLogin , setSignup , setToken , checkLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [ permission , setPermission ] = useState(false);
+
 const [error, setError] = useState(null);
   const handleLogin = async () => {
     const user = { email, password };
@@ -15,11 +17,15 @@ const [error, setError] = useState(null);
       .then((response) => {
         if (response.data.token) { 
           setLogin(false);
-          setSignup(false);
+          setSignup({
+            user : true ,
+            driver : false ,
+          });
           setToken(true); 
           checkLogin();
 
           AsyncStorage.setItem('jwtToken', response.data.token)
+          AsyncStorage.setItem('user', email)
        }
     }).catch
     (error => {
@@ -45,7 +51,10 @@ const [error, setError] = useState(null);
 
   const changeState = () => {
       setLogin(false);
-      setSignup(true);
+      setSignup({
+        user : true ,
+        driver : false ,
+      });
       setToken(false);
   }
 

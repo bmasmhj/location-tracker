@@ -10,15 +10,15 @@ const authenticate = require('../middleware/mid');
 require('../db/conn');
 const User = require('../model/userSchema');
 const Location = require('../model/locationSchema');
-
+const Driver = require('../model/driverSchema');
 router.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
 router.post('/register', async (req, res) => {
   console.log(req.body);
-    const { name, email,job, password, cpassword } = req.body;
-    if (!name || !email || !job || !password || !cpassword) {
+    const { name, email, password, cpassword } = req.body;
+    if (!name || !email || !password || !cpassword) {
       return res.status(422).json({ error: "Please fill all the fields" });
     }
   
@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
       } else if (password != cpassword) {
         return res.status(422).json({ error: "Passwords are not matching" });
       } else {
-        const user = new User({ name, email,job, password, cpassword });
+        const user = new User({ name, email, password, cpassword });
         await user.save();
         const token = await user.generateAuthToken();
         res.cookie("jwtoken", token, {
@@ -44,6 +44,41 @@ router.post('/register', async (req, res) => {
     }
   });
   
+router.post('/register-driver', async (req, res) => {
+console.log(req.body);
+  const { name, email,job, password, cpassword } = req.body;
+  if (!name || !email || !job || !password || !cpassword) {
+    return res.status(422).json({ error: "Please fill all the fields" });
+  }
+
+  try {
+    const response = await Driver.findOne({ email: email });
+    if (response) {
+      return res.status(422).json({ error: "Email already exists" });
+    } else if (password != cpassword) {
+      return res.status(422).json({ error: "Passwords are not matching" });
+    } else {
+      let latitude = 27.6710754 ;
+      let longitude = 85.3307457;
+      const driver = new Driver({ name, email,job, password, cpassword , latitude , longitude });
+      await driver.save();
+
+      const user = new User({ name, email, password, cpassword });
+      await user.save();
+
+      const token = await driver.generateAuthToken();
+      res.cookie("jwtoken", token, {
+        expires: new Date(Date.now() + 25892000000),
+        httpOnly: false
+      });
+      return res.status(201).json({ message: "driver registered successfully" ,  token : token   }); // Set the status code to 201 for successful registration
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" }); // Set the status code to 500 for server errors
+  }
+});
+
 
   router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -114,7 +149,7 @@ router.post('/register', async (req, res) => {
 router.get('/locations', async (req, res) => {
   try {
     // Fetch all user locations from the database
-    const locations = await Location.find();
+    const locations = await Driver.find();
     res.status(200).json(locations);
   } catch (error) {
     console.error(error);

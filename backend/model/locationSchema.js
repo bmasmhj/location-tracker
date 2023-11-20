@@ -10,6 +10,14 @@ const locationSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  route : {
+    type : String,
+    required : true,
+  },
+  routeName : {
+    type : String,
+    required : true,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User" 

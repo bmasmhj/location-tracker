@@ -1,64 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text , Button , StyleSheet } from 'react-native';
+import { View, Text , Button , StyleSheet, TextInput } from 'react-native';
 
 
 
-const Cards = ({id , setCardShow}) => {
-  let locationofToilets = [
-    {
-      id : 1,
-      title : 'Toilet 1',
-      location : {
-        latitude: 27.635115163670722,
-        longitude: 85.21667719752,
-      },
-      description : 'Toilet 1',
-      ratings : [
-        {
-          id : 1,
-          rating : 4,
-          comment : 'Good'
-        },
-        {
-          id : 2,
-          rating : 3,
-          comment : 'Average'
-        },
-        {
-          id : 3,
-          rating : 5,
-          comment : 'Excellent'
-        }
-      ]
-    },
-    {
-      id : 2,
-      title : 'Toilet 2',
-      location : {
-        latitude: 27.625115163670722,
-        longitude: 85.2166771975252,
-      },
-      description : 'Toilet 2',
-    },
-    {
-      id : 3,
-      title : 'Toilet 3',
-      location : {
-        latitude: 27.634115163670722,
-        longitude: 85.22667719752,
-      },
-    }
-  ]
-  
+const Cards = ({selectedLocation , setCardShow}) => {
+
 const [ cardDetails , setCardDetails ] = useState({})
 
-useEffect(() => {
- locationofToilets.map((item) => {
-    if(item.id === id){
-      setCardDetails(item)
-    }
-  })
-}, [id])
 
 return (
   <>
@@ -66,13 +14,21 @@ return (
       <View style={styles.cardBody}>
           <View style={styles.cardHeader}>
             <View>
-                <Text style={styles.cardHeaderTitle} >Route Name</Text>
+                <Text style={styles.cardHeaderTitle} >{selectedLocation.name}</Text>
                 <Text>
                   some description
                 </Text>
                 <Text>
                   10km Away
                 </Text>
+                {/* input */}
+
+                <TextInput 
+                placeholder="Enter your name"
+                keyboardType="numeric"
+                   />
+                   
+
             </View>
             <View>
               <Button title="Close" onPress={() => setCardShow(false)} />
